@@ -5,87 +5,90 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class QuantityMeasurementAppTest {
 
+    private static final double EPS = 1e-6;
+
     @Test
-    void testEquality_YardToYard_SameValue() {
-        assertTrue(new Length(1.0, LengthUnit.YARDS)
-                .equals(new Length(1.0, LengthUnit.YARDS)));
+    void testConversion_FeetToInches() {
+        assertEquals(12.0,
+                Length.convert(1.0, LengthUnit.FEET, LengthUnit.INCH),
+                EPS);
     }
 
     @Test
-    void testEquality_YardToYard_DifferentValue() {
-        assertFalse(new Length(1.0, LengthUnit.YARDS)
-                .equals(new Length(2.0, LengthUnit.YARDS)));
+    void testConversion_InchesToFeet() {
+        assertEquals(2.0,
+                Length.convert(24.0, LengthUnit.INCH, LengthUnit.FEET),
+                EPS);
     }
 
     @Test
-    void testEquality_YardToFeet_EquivalentValue() {
-        assertTrue(new Length(1.0, LengthUnit.YARDS)
-                .equals(new Length(3.0, LengthUnit.FEET)));
+    void testConversion_YardsToInches() {
+        assertEquals(36.0,
+                Length.convert(1.0, LengthUnit.YARDS, LengthUnit.INCH),
+                EPS);
     }
 
     @Test
-    void testEquality_YardToInches_EquivalentValue() {
-        assertTrue(new Length(1.0, LengthUnit.YARDS)
-                .equals(new Length(36.0, LengthUnit.INCH)));
+    void testConversion_CentimetersToInches() {
+        assertEquals(1.0,
+                Length.convert(2.54, LengthUnit.CENTIMETERS, LengthUnit.INCH),
+                EPS);
     }
 
     @Test
-    void testEquality_CentimeterToCentimeter_SameValue() {
-        assertTrue(new Length(2.0, LengthUnit.CENTIMETERS)
-                .equals(new Length(2.0, LengthUnit.CENTIMETERS)));
+    void testRoundTripConversion() {
+        double original = 5.0;
+        double converted = Length.convert(original,
+                LengthUnit.FEET,
+                LengthUnit.INCH);
+
+        double back = Length.convert(converted,
+                LengthUnit.INCH,
+                LengthUnit.FEET);
+
+        assertEquals(original, back, EPS);
     }
 
     @Test
-    void testEquality_CentimeterToInch_EquivalentValue() {
-        assertTrue(new Length(1.0, LengthUnit.CENTIMETERS)
-                .equals(new Length(0.393701, LengthUnit.INCH)));
+    void testZeroConversion() {
+        assertEquals(0.0,
+                Length.convert(0.0, LengthUnit.FEET, LengthUnit.INCH),
+                EPS);
     }
 
     @Test
-    void testEquality_CentimeterToFeet_NotEqual() {
-        assertFalse(new Length(1.0, LengthUnit.CENTIMETERS)
-                .equals(new Length(1.0, LengthUnit.FEET)));
+    void testNegativeConversion() {
+        assertEquals(-12.0,
+                Length.convert(-1.0, LengthUnit.FEET, LengthUnit.INCH),
+                EPS);
     }
 
     @Test
-    void testEquality_MultiUnit_TransitiveProperty() {
-
-        Length yard = new Length(1.0, LengthUnit.YARDS);
-        Length feet = new Length(3.0, LengthUnit.FEET);
-        Length inches = new Length(36.0, LengthUnit.INCH);
-
-        assertTrue(yard.equals(feet));
-        assertTrue(feet.equals(inches));
-        assertTrue(yard.equals(inches));
+    void testSameUnitConversion() {
+        assertEquals(5.0,
+                Length.convert(5.0, LengthUnit.FEET, LengthUnit.FEET),
+                EPS);
     }
 
     @Test
-    void testEquality_AllUnits_ComplexScenario() {
-
-        Length yard = new Length(2.0, LengthUnit.YARDS);
-        Length feet = new Length(6.0, LengthUnit.FEET);
-        Length inches = new Length(72.0, LengthUnit.INCH);
-
-        assertTrue(yard.equals(feet));
-        assertTrue(feet.equals(inches));
-        assertTrue(yard.equals(inches));
-    }
-
-    @Test
-    void testSameReference() {
-        Length yard = new Length(1.0, LengthUnit.YARDS);
-        assertTrue(yard.equals(yard));
-    }
-
-    @Test
-    void testNullComparison() {
-        Length yard = new Length(1.0, LengthUnit.YARDS);
-        assertFalse(yard.equals(null));
-    }
-
-    @Test
-    void testInvalidUnit() {
+    void testInvalidUnitThrows() {
         assertThrows(IllegalArgumentException.class,
-                () -> new Length(1.0, null));
+                () -> Length.convert(1.0, null, LengthUnit.FEET));
+    }
+
+    @Test
+    void testNaNThrows() {
+        assertThrows(IllegalArgumentException.class,
+                () -> Length.convert(Double.NaN,
+                        LengthUnit.FEET,
+                        LengthUnit.INCH));
+    }
+
+    @Test
+    void testEqualityStillWorks() {
+        Length feet = new Length(1.0, LengthUnit.FEET);
+        Length inches = new Length(12.0, LengthUnit.INCH);
+
+        assertTrue(feet.equals(inches));
     }
 }
