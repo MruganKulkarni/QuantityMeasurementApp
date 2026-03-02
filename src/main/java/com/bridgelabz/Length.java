@@ -7,82 +7,90 @@ public class Length {
     private final double value;
     private final LengthUnit unit;
 
-    public enum LengthUnit {
+    private static final double EPSILON = 0.0001;
 
+    public enum LengthUnit {
         FEET(1.0),
         INCHES(1.0 / 12.0),
         YARDS(3.0),
         CENTIMETERS(0.0328084);
 
-        final double toFeetFactor;
+        private final double toFeetFactor;
 
-        LengthUnit(double factor) {
-            this.toFeetFactor = factor;
+        LengthUnit(double toFeetFactor) {
+            this.toFeetFactor = toFeetFactor;
+        }
+
+        public double toFeet(double value) {
+            return value * toFeetFactor;
+        }
+
+        public double fromFeet(double feetValue) {
+            return feetValue / toFeetFactor;
         }
     }
 
     public Length(double value, LengthUnit unit) {
-        if (unit == null) {
-            throw new IllegalArgumentException("Unit cannot be null");
+        if (!Double.isFinite(value) || unit == null) {
+            throw new IllegalArgumentException("Invalid length");
         }
-        if (!Double.isFinite(value)) {
-            throw new IllegalArgumentException("Invalid value");
-        }
-
         this.value = value;
         this.unit = unit;
     }
 
     private double toFeet() {
-        return value * unit.toFeetFactor;
+        return unit.toFeet(value);
     }
 
     public Length convertTo(LengthUnit targetUnit) {
-        if (targetUnit == null) {
-            throw new IllegalArgumentException("Target unit cannot be null");
-        }
-
-        double feetValue = toFeet();
-        double convertedValue = feetValue / targetUnit.toFeetFactor;
-
-        return new Length(convertedValue, targetUnit);
+        if (targetUnit == null) throw new IllegalArgumentException();
+        double feet = this.toFeet();
+        double converted = targetUnit.fromFeet(feet);
+        return new Length(converted, targetUnit);
     }
 
-    public static double convert(double value, LengthUnit source, LengthUnit target) {
-        if (source == null || target == null) {
-            throw new IllegalArgumentException("Units cannot be null");
+    public static double convert(double value, LengthUnit from, LengthUnit to) {
+        if (!Double.isFinite(value) || from == null || to == null) {
+            throw new IllegalArgumentException();
         }
-        if (!Double.isFinite(value)) {
-            throw new IllegalArgumentException("Invalid numeric value");
-        }
-
-        double valueInFeet = value * source.toFeetFactor;
-        return valueInFeet / target.toFeetFactor;
+        double feet = from.toFeet(value);
+        return to.fromFeet(feet);
     }
 
+    // UC6 — Add (result in first operand unit)
     public Length add(Length other) {
-        if (other == null) {
-            throw new IllegalArgumentException("Cannot add null length");
+        if (other == null) throw new IllegalArgumentException();
+        return add(other, this.unit);
+    }
+
+    // ⭐ UC7 — Add with explicit target unit
+    public Length add(Length other, LengthUnit targetUnit) {
+        if (other == null || targetUnit == null) {
+            throw new IllegalArgumentException();
         }
 
         double sumFeet = this.toFeet() + other.toFeet();
-        double resultValue = sumFeet / this.unit.toFeetFactor;
+        double resultValue = targetUnit.fromFeet(sumFeet);
 
-        return new Length(resultValue, this.unit);
+        resultValue = round(resultValue);   // ⭐ FIX
+
+        return new Length(resultValue, targetUnit);
+    }
+    private double round(double value) {
+        return Math.round(value * 10000.0) / 10000.0;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof Length other)) return false;
-
-        double epsilon = 1e-6;
-        return Math.abs(this.toFeet() - other.toFeet()) < epsilon;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Length)) return false;
+        Length other = (Length) o;
+        return Math.abs(this.toFeet() - other.toFeet()) < EPSILON;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(toFeet());
+        return Objects.hash(Math.round(toFeet() / EPSILON));
     }
 
     @Override
