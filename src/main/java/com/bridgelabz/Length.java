@@ -1,85 +1,92 @@
 package com.bridgelabz;
 
-/**
- * Immutable value object representing a length measurement.
- * All conversions normalize to FEET as the base unit.
- */
-public final class Length {
+import java.util.Objects;
 
-    private static final double EPSILON = 1e-6;
+public class Length {
 
     private final double value;
     private final LengthUnit unit;
 
+    public enum LengthUnit {
+
+        FEET(1.0),
+        INCHES(1.0 / 12.0),
+        YARDS(3.0),
+        CENTIMETERS(0.0328084);
+
+        final double toFeetFactor;
+
+        LengthUnit(double factor) {
+            this.toFeetFactor = factor;
+        }
+    }
+
     public Length(double value, LengthUnit unit) {
-        if (!Double.isFinite(value))
-            throw new IllegalArgumentException("Value must be finite");
-        if (unit == null)
+        if (unit == null) {
             throw new IllegalArgumentException("Unit cannot be null");
+        }
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Invalid value");
+        }
 
         this.value = value;
         this.unit = unit;
     }
 
-    public double getValue() {
-        return value;
+    private double toFeet() {
+        return value * unit.toFeetFactor;
     }
-
-    public LengthUnit getUnit() {
-        return unit;
-    }
-
-    /* -------------------- STATIC CONVERSION API -------------------- */
-
-    public static double convert(double value,
-                                 LengthUnit source,
-                                 LengthUnit target) {
-
-        if (!Double.isFinite(value))
-            throw new IllegalArgumentException("Value must be finite");
-
-        if (source == null || target == null)
-            throw new IllegalArgumentException("Units cannot be null");
-
-        double valueInFeet = source.toFeet(value);
-        return valueInFeet / target.toFeet(1.0);
-    }
-
-    /* -------------------- INSTANCE CONVERSION -------------------- */
 
     public Length convertTo(LengthUnit targetUnit) {
-
-        if (targetUnit == null)
+        if (targetUnit == null) {
             throw new IllegalArgumentException("Target unit cannot be null");
+        }
 
-        double convertedValue = convert(this.value, this.unit, targetUnit);
+        double feetValue = toFeet();
+        double convertedValue = feetValue / targetUnit.toFeetFactor;
 
         return new Length(convertedValue, targetUnit);
     }
 
-    /* -------------------- EQUALITY -------------------- */
+    public static double convert(double value, LengthUnit source, LengthUnit target) {
+        if (source == null || target == null) {
+            throw new IllegalArgumentException("Units cannot be null");
+        }
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException("Invalid numeric value");
+        }
 
-    private double toBaseFeet() {
-        return unit.toFeet(value);
+        double valueInFeet = value * source.toFeetFactor;
+        return valueInFeet / target.toFeetFactor;
+    }
+
+    public Length add(Length other) {
+        if (other == null) {
+            throw new IllegalArgumentException("Cannot add null length");
+        }
+
+        double sumFeet = this.toFeet() + other.toFeet();
+        double resultValue = sumFeet / this.unit.toFeetFactor;
+
+        return new Length(resultValue, this.unit);
     }
 
     @Override
     public boolean equals(Object obj) {
-
         if (this == obj) return true;
-
         if (!(obj instanceof Length other)) return false;
 
-        return Math.abs(this.toBaseFeet() - other.toBaseFeet()) < EPSILON;
+        double epsilon = 1e-6;
+        return Math.abs(this.toFeet() - other.toFeet()) < epsilon;
     }
 
     @Override
     public int hashCode() {
-        return Double.hashCode(toBaseFeet());
+        return Objects.hash(toFeet());
     }
 
     @Override
     public String toString() {
-        return String.format("%.6f %s", value, unit);
+        return value + " " + unit;
     }
 }
