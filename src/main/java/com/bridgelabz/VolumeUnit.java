@@ -4,7 +4,7 @@ package com.bridgelabz;
  * Enum representing Volume Units.
  * Base Unit: LITRE
  */
-public enum VolumeUnit implements IMeasurable {
+public enum VolumeUnit implements IMeasurable, ArithmeticCapable {
 
     LITRE(1.0, "Litre"),
     MILLILITRE(0.001, "Millilitre"),

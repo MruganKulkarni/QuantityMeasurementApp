@@ -1,6 +1,6 @@
 package com.bridgelabz;
 
-public enum LengthUnit implements IMeasurable {
+public enum LengthUnit implements IMeasurable, ArithmeticCapable {
 
     // Base unit = FEET
     FEET(1.0),

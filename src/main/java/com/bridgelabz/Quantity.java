@@ -2,7 +2,7 @@ package com.bridgelabz;
 
 import java.util.Objects;
 
-public class Quantity<U extends IMeasurable> {
+public class Quantity<U extends Enum<U> & IMeasurable> {
 
     private final double value;
     private final U unit;
@@ -97,7 +97,14 @@ public class Quantity<U extends IMeasurable> {
             throw new IllegalArgumentException("Other quantity cannot be null");
         }
 
-        if (!this.unit.getClass().equals(other.unit.getClass())) {
+        if (!(this.unit instanceof ArithmeticCapable)) {
+            throw new UnsupportedOperationException(
+                    "Arithmetic operations not supported for measurement category"
+            );
+        }
+
+        // ✅ FIXED CATEGORY CHECK
+        if (!this.unit.getDeclaringClass().equals(other.unit.getDeclaringClass())) {
             throw new IllegalArgumentException("Cannot operate on different measurement categories");
         }
 
@@ -166,7 +173,8 @@ public class Quantity<U extends IMeasurable> {
         if (this == obj) return true;
         if (!(obj instanceof Quantity<?> other)) return false;
 
-        if (!this.unit.getClass().equals(other.unit.getClass())) {
+        // ✅ FIXED CATEGORY CHECK
+        if (!this.unit.getDeclaringClass().equals(other.unit.getDeclaringClass())) {
             return false;
         }
 
@@ -179,7 +187,9 @@ public class Quantity<U extends IMeasurable> {
     @Override
     public int hashCode() {
         double base = unit.convertToBaseUnit(value);
-        return Objects.hash(round(base), unit.getClass());
+
+        // ✅ FIXED HASH CATEGORY CHECK
+        return Objects.hash(round(base), unit.getDeclaringClass());
     }
 
     @Override
@@ -188,6 +198,6 @@ public class Quantity<U extends IMeasurable> {
     }
 
     private double round(double value) {
-        return Math.floor(value * 10000.0) / 10000.0;
+        return Math.round(value * 10000.0) / 10000.0;
     }
 }

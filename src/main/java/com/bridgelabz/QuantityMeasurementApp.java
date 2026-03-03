@@ -24,5 +24,30 @@ public class QuantityMeasurementApp {
 
         System.out.println("Volume Subtraction: " + volume1.subtract(volume2));
         System.out.println("Volume Division: " + volume1.divide(volume2));
+
+        // ============================
+// TEMPERATURE DEMONSTRATION (UC14)
+// ============================
+
+        Quantity<TemperatureUnit> temp1 =
+                new Quantity<>(0.0, TemperatureUnit.CELSIUS);
+        Quantity<TemperatureUnit> temp2 =
+                new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
+
+        System.out.println("Temperature Equality (0C == 32F): "
+                + temp1.equals(temp2));
+
+        Quantity<TemperatureUnit> convertedTemp =
+                temp1.convertTo(TemperatureUnit.KELVIN);
+
+        System.out.println("0C in Kelvin: "
+                + convertedTemp.getValue() + " "
+                + convertedTemp.getUnit().getUnitName());
+
+        try {
+            temp1.add(new Quantity<>(10.0, TemperatureUnit.CELSIUS));
+        } catch (UnsupportedOperationException e) {
+            System.out.println("Temperature arithmetic blocked: " + e.getMessage());
+        }
     }
 }
