@@ -1,8 +1,6 @@
-package com.bridgelabz;
+package com.bridgelabz.interfaces;
 
-/**
- * Marker interface indicating that a unit supports arithmetic operations
- * like addition, subtraction, and division.
- */
 public interface ArithmeticCapable {
+    double add(double a, double b);
+    double subtract(double a, double b);
 }

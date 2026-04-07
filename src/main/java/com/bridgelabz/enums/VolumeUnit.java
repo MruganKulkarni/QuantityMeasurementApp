@@ -1,40 +1,39 @@
-package com.bridgelabz;
+package com.bridgelabz.enums;
 
-/**
- * Enum representing Volume Units.
- * Base Unit: LITRE
- */
-public enum VolumeUnit implements IMeasurable, ArithmeticCapable {
+import com.bridgelabz.interfaces.IMeasurable;
+import com.bridgelabz.interfaces.SupportsArithmetic;
 
-    LITRE(1.0, "Litre"),
-    MILLILITRE(0.001, "Millilitre"),
-    GALLON(3.78541, "Gallon");
+public enum VolumeUnit implements IMeasurable {
+    LITRE(1.0),
+    MILLILITRE(0.001),
+    GALLON(3.78541);
 
-    private final double conversionFactor;
-    private final String unitName;
+    private final double factorToLitre;
 
-    VolumeUnit(double conversionFactor, String unitName) {
-        this.conversionFactor = conversionFactor;
-        this.unitName = unitName;
+    VolumeUnit(double factorToLitre){
+        this.factorToLitre = factorToLitre;
+    }
+
+    SupportsArithmetic supportsArithmetic = () -> true;
+
+    @Override
+    public double convertToBaseUnit(double value){
+        return value * factorToLitre;
     }
 
     @Override
-    public double getConversionFactor() {
-        return conversionFactor;
+    public double convertFromBaseUnit(double baseValue){
+        return baseValue / factorToLitre;
+    }
+
+
+
+    public double getConversionFactor(){
+        return factorToLitre;
     }
 
     @Override
-    public double convertToBaseUnit(double value) {
-        return value * conversionFactor;
-    }
-
-    @Override
-    public double convertFromBaseUnit(double baseValue) {
-        return baseValue / conversionFactor;
-    }
-
-    @Override
-    public String getUnitName() {
-        return unitName;
+    public String getUnitName(){
+        return name();
     }
 }

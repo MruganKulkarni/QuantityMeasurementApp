@@ -1,54 +1,48 @@
-package com.bridgelabz;
+package com.bridgelabz.enums;
 
-/**
- * Temperature units with non-linear (affine) conversion.
- * Base unit: CELSIUS
- */
+import com.bridgelabz.interfaces.IMeasurable;
+import com.bridgelabz.interfaces.SupportsArithmetic;
+
+import java.util.function.Function;
+
 public enum TemperatureUnit implements IMeasurable {
+    CELSIUS(c -> c, c -> c),
 
-    CELSIUS {
-        @Override
-        public double convertToBaseUnit(double value) {
-            return value; // base unit
-        }
+    FAHRENHEIT(f -> (f - 32) * 5 / 9, c -> (c * 9 / 5) + 32),
 
-        @Override
-        public double convertFromBaseUnit(double baseValue) {
-            return baseValue;
-        }
-    },
+    KELVIN(k -> k - 273.15, c -> c + 273.15);
 
-    FAHRENHEIT {
-        @Override
-        public double convertToBaseUnit(double value) {
-            return (value - 32) * 5.0 / 9.0;
-        }
+    private final Function<Double, Double> toCelsius;
+    private final Function<Double, Double> fromCelsius;
 
-        @Override
-        public double convertFromBaseUnit(double baseValue) {
-            return (baseValue * 9.0 / 5.0) + 32;
-        }
-    },
+    SupportsArithmetic supportsArithmetic = () -> false;
 
-    KELVIN {
-        @Override
-        public double convertToBaseUnit(double value) {
-            return value - 273.15;
-        }
+    TemperatureUnit(Function<Double, Double> toCelsius,
+            Function<Double, Double> fromCelsius) {
 
-        @Override
-        public double convertFromBaseUnit(double baseValue) {
-            return baseValue + 273.15;
-        }
-    };
-
-    @Override
-    public double getConversionFactor() {
-        return 1.0; // not used for affine conversions
+        this.toCelsius = toCelsius;
+        this.fromCelsius = fromCelsius;
     }
 
     @Override
-    public String getUnitName() {
-        return this.name();
+    public double convertToBaseUnit(double value) {
+        return toCelsius.apply(value);
+    }
+
+    @Override
+    public double convertFromBaseUnit(double baseValue) {
+        return fromCelsius.apply(baseValue);
+    }
+
+    @Override
+    public void validateOperationSupport(String operation) {
+        throw new UnsupportedOperationException(
+                "Operation '" + operation + "' is not supported for Temperature."
+        );
+    }
+
+    @Override
+    public String getUnitName(){
+        return name();
     }
 }
