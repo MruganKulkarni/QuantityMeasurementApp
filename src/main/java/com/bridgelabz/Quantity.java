@@ -173,7 +173,7 @@ public class Quantity<U extends Enum<U> & IMeasurable> {
         if (this == obj) return true;
         if (!(obj instanceof Quantity<?> other)) return false;
 
-        // ✅ FIXED CATEGORY CHECK
+        //  FIXED CATEGORY CHECK
         if (!this.unit.getDeclaringClass().equals(other.unit.getDeclaringClass())) {
             return false;
         }
@@ -188,7 +188,7 @@ public class Quantity<U extends Enum<U> & IMeasurable> {
     public int hashCode() {
         double base = unit.convertToBaseUnit(value);
 
-        // ✅ FIXED HASH CATEGORY CHECK
+        //  FIXED HASH CATEGORY CHECK
         return Objects.hash(round(base), unit.getDeclaringClass());
     }
 
